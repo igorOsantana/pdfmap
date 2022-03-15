@@ -14,7 +14,9 @@ import { SELECT_TYPE_OPTIONS, TYPE_OPTIONS } from '../createElementModal/constan
 const { useForm } = Form
 const { confirm } = Modal
 
-function UpdateModal ({ visible, info, elements, setElements, onClose, setSelectedItem }) {
+function UpdateModal ({ visible, selectedElement, elements, setElements, onClose, setSelectedItemId }) {
+  const { id, field, x, y, width, height, fill } = selectedElement
+
   const [form] = useForm()
   const { scale } = useDocument()
 
@@ -41,7 +43,6 @@ function UpdateModal ({ visible, info, elements, setElements, onClose, setSelect
   }
 
   const deleteElement = () => {
-    const { id } = info
     const items = elements.filter(element => element.id !== id)
     const changes = removeScale(items, scale)
 
@@ -51,12 +52,11 @@ function UpdateModal ({ visible, info, elements, setElements, onClose, setSelect
   }
 
   const onDuplicate = () => {
-    const { id, x, y, ...element } = info
-    const newItem = { ...element, ...incrementXYToDuplicate({ x, y }), id: uuidv4() }
+    const newItem = { ...selectedElement, ...incrementXYToDuplicate({ x, y }), id: uuidv4() }
     const items = [...elements, newItem]
     const changes = removeScale(items, scale)
 
-    setSelectedItem(newItem.id)
+    setSelectedItemId(newItem.id)
     localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(changes))
     setElements(items)
     onClose()
@@ -69,23 +69,33 @@ function UpdateModal ({ visible, info, elements, setElements, onClose, setSelect
     }
   }
 
+  const onSave = async () => {
+    const { field, type } = await form.validateFields()
+    const color = TYPE_OPTIONS[type].fill
+    const item = { ...selectedElement, field, type, fill: color }
+
+    setElements(prevElements => prevElements.map(element => element.id === id ? item : element))
+    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(removeScale(elements, scale)))
+    onClose()
+  }
+
   useEffect(() => {
-    if (info?.id) {
+    if (selectedElement?.id) {
       form.setFieldsValue({
-        field: info.field,
-        type: setTypeFromColor(info.fill),
-        x: info.x,
-        y: info.y,
-        width: info.width,
-        height: info.height
+        field,
+        type: setTypeFromColor(fill),
+        x,
+        y,
+        width,
+        height
       })
     }
-  }, [info])
+  }, [selectedElement])
 
   const ModalButtons = () => (
     <>
       <Button onClick={onClose} icon={<CloseOutlined />}>Cancel</Button>
-      <Button type='primary' icon={<CheckOutlined />}>Save</Button>
+      <Button type='primary' icon={<CheckOutlined />} onClick={onSave}>Save</Button>
     </>
   )
 
@@ -135,7 +145,7 @@ function UpdateModal ({ visible, info, elements, setElements, onClose, setSelect
 
 UpdateModal.propTypes = {
   visible: PropTypes.bool.isRequired,
-  info: PropTypes.shape({
+  selectedElement: PropTypes.shape({
     id: PropTypes.string.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
@@ -156,7 +166,7 @@ UpdateModal.propTypes = {
   ).isRequired,
   setElements: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
-  setSelectedItem: PropTypes.func.isRequired
+  setSelectedItemId: PropTypes.func.isRequired
 }
 
 export default UpdateModal

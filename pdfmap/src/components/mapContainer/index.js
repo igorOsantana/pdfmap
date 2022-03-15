@@ -16,15 +16,15 @@ const CONTAINER_STYLE = {
 }
 
 function MapContainer ({ config, elements, setElements }) {
-  const [selectedItem, setSelectedItem] = useState(null)
+  const [selectedItemId, setSelectedItemId] = useState(null)
   const [modalVisible, setModalVisible] = useState(false)
-  const [infoElement, setInfoElement] = useState(null)
+  const [selectedElement, setSelectedElement] = useState(null)
 
   const { scale } = useDocument()
 
   const checkDeselect = event => {
     const clickedOnEmpty = event.target === event.target.getStage()
-    if (clickedOnEmpty) setSelectedItem(null)
+    if (clickedOnEmpty) setSelectedItemId(null)
   }
 
   const openUpdateModal = event => {
@@ -32,7 +32,7 @@ function MapContainer ({ config, elements, setElements }) {
     if (event.target.parent) {
       const { target: { attrs: { id } } } = event
       const element = getElementSelected(id)
-      setInfoElement(element)
+      setSelectedElement(element)
       setModalVisible(true)
     }
   }
@@ -67,8 +67,8 @@ function MapContainer ({ config, elements, setElements }) {
             <Element
               key={id}
               elementProps={{ ...elementProps, id }}
-              isSelected={id === selectedItem}
-              onSelect={() => setSelectedItem(id)}
+              isSelected={id === selectedItemId}
+              onSelect={() => setSelectedItemId(id)}
               onChange={changes => handleChangeElement({ changes, index })}
             />
           ))}
@@ -77,11 +77,11 @@ function MapContainer ({ config, elements, setElements }) {
       {modalVisible
         ? <UpdateElementModal
             visible={modalVisible}
-            info={infoElement}
+            selectedElement={selectedElement}
             elements={elements}
             setElements={setElements}
             onClose={handleCloseModal}
-            setSelectedItem={setSelectedItem}
+            setSelectedItemId={setSelectedItemId}
           />
         : null}
     </>
