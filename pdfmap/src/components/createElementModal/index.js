@@ -16,7 +16,10 @@ function CreateModal ({ visible, toggleVisible, addElement }) {
     const options = handleSelectedType(type)
     const elementOptions = { field, type, ...options }
 
-    if (!elementOptions.type) message.error(`Invalid type: ${type}`)
+    if (!elementOptions.type) {
+      message.error(`Invalid type: ${type}`)
+      return
+    }
 
     addElement(elementOptions)
     toggleVisible()
