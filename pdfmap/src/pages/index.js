@@ -4,8 +4,9 @@ import { v4 as uuidv4 } from 'uuid'
 import 'antd/dist/antd.css'
 
 import SideMenu from '../components/sideMenu'
+
 import { useDocument } from '../hooks'
-import { LOCAL_STORAGE_KEY_TO_MAP } from '../constants'
+import { getMappingElements, saveMappingElements } from '../helpers'
 
 const DocumentContainer = dynamic(
   () => import('../components/documentContainer'),
@@ -36,7 +37,7 @@ export default function Home () {
     const newElement = { ...element, x: 0, y: 0, id: uuidv4() }
     const allElements = [...elements, newElement]
 
-    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(allElements))
+    saveMappingElements(allElements, scale)
     getElementsFromStorage()
   }
 
@@ -51,8 +52,8 @@ export default function Home () {
   }
 
   const getElementsFromStorage = () => {
-    const items = localStorage.getItem(LOCAL_STORAGE_KEY_TO_MAP)
-    if (items) setElements(JSON.parse(items))
+    const items = getMappingElements()
+    setElements(items)
   }
 
   useEffect(() => {

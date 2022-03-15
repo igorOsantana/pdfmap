@@ -6,8 +6,7 @@ import Element from '../element'
 import UpdateElementModal from '../updateElementModal'
 
 import { useDocument } from '../../hooks'
-import { removeScale } from '../../helpers'
-import { LOCAL_STORAGE_KEY_TO_MAP } from '../../constants'
+import { saveMappingElements } from '../../helpers'
 
 const CONTAINER_STYLE = {
   position: 'absolute',
@@ -45,12 +44,7 @@ function MapContainer ({ config, elements, setElements }) {
     const elementsCopy = elements.slice()
     elementsCopy[index] = changes
     setElements(elementsCopy)
-    saveMapChanges(elementsCopy)
-  }
-
-  const saveMapChanges = (items) => {
-    const changes = JSON.stringify(removeScale(items, scale))
-    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, changes)
+    saveMappingElements(elementsCopy, scale)
   }
 
   return (

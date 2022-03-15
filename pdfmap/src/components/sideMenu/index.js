@@ -16,8 +16,9 @@ import {
 } from '@ant-design/icons'
 
 import CreateElementModal from '../createElementModal'
+
 import { useDocument } from '../../hooks'
-import { LOCAL_STORAGE_KEY_TO_SAVE, LOCAL_STORAGE_KEY_TO_MAP } from '../../constants'
+import { getMappingElements, saveElementsMapped } from '../../helpers'
 
 const { SubMenu } = Menu
 
@@ -80,27 +81,13 @@ function SideMenu ({
   }
 
   const saveChanges = () => {
-    const changes = JSON.stringify(removeScale(elements))
-    localStorage.setItem(LOCAL_STORAGE_KEY_TO_SAVE, changes)
+    saveElementsMapped(elements, scale)
     message.success('Your changes have been saved!')
   }
 
-  const removeScale = (array) => {
-    return array.map(item => {
-      const { x, y, width, height } = item
-      return {
-        ...item,
-        x: x / scale,
-        y: y / scale,
-        width: width / scale,
-        height: height / scale
-      }
-    })
-  }
-
   useEffect(() => {
-    const changes = localStorage.getItem(LOCAL_STORAGE_KEY_TO_MAP)
-    if (changes) setElements(JSON.parse(changes))
+    const changes = getMappingElements()
+    if (changes) setElements(changes)
   }, [scale])
 
   return (

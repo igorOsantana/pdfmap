@@ -6,9 +6,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { OptionType } from '../createElementModal'
 
-import { removeScale } from '../../helpers'
+import { saveMappingElements } from '../../helpers'
 import { useDocument } from '../../hooks'
-import { LOCAL_STORAGE_KEY_TO_MAP } from '../../constants'
 import { SELECT_TYPE_OPTIONS, TYPE_OPTIONS } from '../createElementModal/constants'
 
 const { useForm } = Form
@@ -44,22 +43,23 @@ function UpdateModal ({ visible, selectedElement, elements, setElements, onClose
 
   const deleteElement = () => {
     const items = elements.filter(element => element.id !== id)
-    const changes = removeScale(items, scale)
 
-    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(changes))
-    setElements(items)
+    saveButtonActionChanges(items)
     onClose()
   }
 
   const onDuplicate = () => {
     const newItem = { ...selectedElement, ...incrementXYToDuplicate({ x, y }), id: uuidv4() }
     const items = [...elements, newItem]
-    const changes = removeScale(items, scale)
 
     setSelectedItemId(newItem.id)
-    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(changes))
-    setElements(items)
+    saveButtonActionChanges(items)
     onClose()
+  }
+
+  const saveButtonActionChanges = (items) => {
+    saveMappingElements(items, scale)
+    setElements(items)
   }
 
   const incrementXYToDuplicate = ({ x, y }) => {
@@ -75,7 +75,7 @@ function UpdateModal ({ visible, selectedElement, elements, setElements, onClose
     const item = { ...selectedElement, field, type, fill: color }
 
     setElements(prevElements => prevElements.map(element => element.id === id ? item : element))
-    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(removeScale(elements, scale)))
+    saveMappingElements(elements, scale)
     onClose()
   }
 
