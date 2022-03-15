@@ -49,6 +49,10 @@ function Element ({
     })
   }
 
+  const handleClickElement = () => {
+    onSelect()
+  }
+
   useEffect(() => {
     if (isSelected) {
       transformRef.current.nodes([rectangleRef.current])
@@ -59,7 +63,7 @@ function Element ({
   return (
     <>
       <Rect
-        onClick={onSelect}
+        onClick={handleClickElement}
         ref={rectangleRef}
         {...elementProps}
         draggable
@@ -67,9 +71,11 @@ function Element ({
         onTransformEnd={handleTransformEnd}
       />
       {isSelected
-        ? (
-        <Transformer ref={transformRef} boundBoxFunc={handleTransform} />
-          )
+        ? <Transformer
+            ref={transformRef}
+            boundBoxFunc={handleTransform}
+            rotateEnabled={false}
+          />
         : null}
     </>
   )

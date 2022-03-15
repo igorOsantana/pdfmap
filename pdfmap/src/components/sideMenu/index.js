@@ -12,22 +12,19 @@ import {
   ZoomOutOutlined,
   LeftOutlined,
   RightOutlined,
-  CheckOutlined,
-  ReloadOutlined
+  CheckOutlined
 } from '@ant-design/icons'
 
-import CreateModal from '../createModal'
-import { useDocument } from '../../contexts/document'
+import CreateElementModal from '../createElementModal'
+import { useDocument } from '../../hooks'
+import { LOCAL_STORAGE_KEY_TO_SAVE, LOCAL_STORAGE_KEY_TO_MAP } from '../../constants'
 
 const { SubMenu } = Menu
 
-const LOCAL_STORAGE_KEY = '@pdfmap'
-
 function SideMenu ({
   onAddElement,
-  mutableElements,
-  setMutableElements,
-  setImmutableElements
+  elements,
+  setElements
 }) {
   const { pagesHandler, setPagesHandler, setUrl, scale, setScale, url } = useDocument()
 
@@ -35,7 +32,6 @@ function SideMenu ({
 
   const [collapsed, setCollapsed] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [loadChanges, setLoadChanges] = useState([])
 
   const inputDocumentRef = useRef(null)
 
@@ -84,8 +80,8 @@ function SideMenu ({
   }
 
   const saveChanges = () => {
-    const changes = JSON.stringify(removeScale(mutableElements))
-    localStorage.setItem(LOCAL_STORAGE_KEY, changes)
+    const changes = JSON.stringify(removeScale(elements))
+    localStorage.setItem(LOCAL_STORAGE_KEY_TO_SAVE, changes)
     message.success('Your changes have been saved!')
   }
 
@@ -102,21 +98,14 @@ function SideMenu ({
     })
   }
 
-  const loadStoragedChanges = () => {
-    setImmutableElements(loadChanges)
-    setMutableElements(loadChanges)
-    message.success('Your changes have been loaded!')
-  }
-
   useEffect(() => {
-    const changes = localStorage.getItem(LOCAL_STORAGE_KEY)
-    if (changes) setLoadChanges(JSON.parse(changes))
-    else if (changes === null) setLoadChanges([])
-  }, [])
+    const changes = localStorage.getItem(LOCAL_STORAGE_KEY_TO_MAP)
+    if (changes) setElements(JSON.parse(changes))
+  }, [scale])
 
   return (
     <>
-      <CreateModal
+      <CreateElementModal
         visible={showCreateModal}
         toggleVisible={toggleShowCreateModal}
         addElement={onAddElement}
@@ -206,17 +195,9 @@ function SideMenu ({
               key='5'
               icon={<CheckOutlined />}
               onClick={saveChanges}
-              disabled={mutableElements.length === 0}
+              disabled={elements.length === 0}
             >
               Save changes
-            </Menu.Item>
-            <Menu.Item
-              key='6'
-              icon={<ReloadOutlined />}
-              onClick={loadStoragedChanges}
-              disabled={loadChanges.length === 0}
-            >
-              Load changes
             </Menu.Item>
           </SubMenu>
         </Menu>
@@ -227,9 +208,8 @@ function SideMenu ({
 
 SideMenu.propTypes = {
   onAddElement: PropTypes.func.isRequired,
-  mutableElements: PropTypes.array.isRequired,
-  setMutableElements: PropTypes.func.isRequired,
-  setImmutableElements: PropTypes.func.isRequired
+  elements: PropTypes.array.isRequired,
+  setElements: PropTypes.func.isRequired
 }
 
 export default SideMenu

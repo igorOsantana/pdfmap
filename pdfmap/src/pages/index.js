@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid'
 import 'antd/dist/antd.css'
 
 import SideMenu from '../components/sideMenu'
-import { useDocument } from '../contexts/document'
+import { useDocument } from '../hooks'
+import { LOCAL_STORAGE_KEY_TO_MAP } from '../constants'
 
 const DocumentContainer = dynamic(
   () => import('../components/documentContainer'),
@@ -23,8 +24,7 @@ const STYLE_MAIN = {
 }
 
 export default function Home () {
-  const [mutableElements, setMutableElements] = useState([])
-  const [immutableElements, setImmutableElements] = useState([])
+  const [elements, setElements] = useState([])
   const [mapContainerConfig, setMapContainerConfig] = useState({
     width: 0,
     height: 550
@@ -34,38 +34,47 @@ export default function Home () {
 
   const handleAddElement = element => {
     const newElement = { ...element, x: 0, y: 0, id: uuidv4() }
-    setImmutableElements(prevElements => [...prevElements, newElement])
-    setMutableElements(prevElements => [...prevElements, newElement])
+    const allElements = [...elements, newElement]
+
+    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(allElements))
+    getElementsFromStorage()
   }
 
   const resizeElementsByScale = () => {
-    const items = immutableElements.map(({ x, y, width, height, ...restElement }) => ({
+    setElements(prevState => prevState.map(({ x, y, width, height, ...restElement }) => ({
       ...restElement,
       x: x * scale,
       y: y * scale,
       width: width * scale,
       height: height * scale
-    }))
-    setMutableElements(items)
+    })))
+  }
+
+  const getElementsFromStorage = () => {
+    const items = localStorage.getItem(LOCAL_STORAGE_KEY_TO_MAP)
+    if (items) setElements(JSON.parse(items))
   }
 
   useEffect(() => {
+    getElementsFromStorage()
+  }, [])
+
+  useEffect(() => {
     resizeElementsByScale()
-  }, [scale, immutableElements])
+  }, [scale])
 
   return (
       <main style={STYLE_MAIN}>
         <SideMenu
           onAddElement={handleAddElement}
-          mutableElements={mutableElements}
-          setMutableElements={setMutableElements}
-          setImmutableElements={setImmutableElements}
+          elements={elements}
+          setElements={setElements}
         />
         <DocumentContainer setDocumentSize={setMapContainerConfig} />
         <MapContainer
           config={mapContainerConfig}
-          mutableElements={mutableElements}
-          setMutableElements={setMutableElements}
+          elements={elements}
+          setElements={setElements}
         />
       </main>
   )
