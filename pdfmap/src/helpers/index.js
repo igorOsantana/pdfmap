@@ -21,7 +21,9 @@ export const getMappingElements = () => {
 
 export const saveMappingElements = (elements, scale) => {
   const items = JSON.stringify(removeScale(elements, scale))
+
   localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, items)
+  return elements
 }
 
 export const saveElementsMapped = (elements, scale) => {

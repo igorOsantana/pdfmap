@@ -37,8 +37,8 @@ export default function Home () {
     const newElement = { ...element, x: 0, y: 0, id: uuidv4() }
     const allElements = [...elements, newElement]
 
-    saveMappingElements(allElements, scale)
-    getElementsFromStorage()
+    const items = saveMappingElements(allElements, scale)
+    setElements(items)
   }
 
   const resizeElementsByScale = () => {
