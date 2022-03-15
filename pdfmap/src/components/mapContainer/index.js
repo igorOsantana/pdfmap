@@ -81,6 +81,7 @@ function MapContainer ({ config, elements, setElements }) {
             elements={elements}
             setElements={setElements}
             onClose={handleCloseModal}
+            setSelectedItem={setSelectedItem}
           />
         : null}
     </>

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Form, Input, Select, Button, Collapse, Modal } from 'antd'
 import { DeleteOutlined, CopyOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons'
+import { v4 as uuidv4 } from 'uuid'
 
 import { OptionType } from '../createElementModal'
 
@@ -13,7 +14,7 @@ import { SELECT_TYPE_OPTIONS, TYPE_OPTIONS } from '../createElementModal/constan
 const { useForm } = Form
 const { confirm } = Modal
 
-function UpdateModal ({ visible, info, elements, setElements, onClose }) {
+function UpdateModal ({ visible, info, elements, setElements, onClose, setSelectedItem }) {
   const [form] = useForm()
   const { scale } = useDocument()
 
@@ -49,6 +50,25 @@ function UpdateModal ({ visible, info, elements, setElements, onClose }) {
     onClose()
   }
 
+  const onDuplicate = () => {
+    const { id, x, y, ...element } = info
+    const newItem = { ...element, ...incrementXYToDuplicate({ x, y }), id: uuidv4() }
+    const items = [...elements, newItem]
+    const changes = removeScale(items, scale)
+
+    setSelectedItem(newItem.id)
+    localStorage.setItem(LOCAL_STORAGE_KEY_TO_MAP, JSON.stringify(changes))
+    setElements(items)
+    onClose()
+  }
+
+  const incrementXYToDuplicate = ({ x, y }) => {
+    return {
+      x: x + 10,
+      y: y + 30
+    }
+  }
+
   useEffect(() => {
     if (info?.id) {
       form.setFieldsValue({
@@ -72,10 +92,10 @@ function UpdateModal ({ visible, info, elements, setElements, onClose }) {
   return (
     <Modal visible={visible} onCancel={onClose} footer={<ModalButtons />}>
       <Form form={form} style={{ padding: '30px 0 0 0' }}>
-        <Form.Item label='Field' name='field'>
+        <Form.Item label='Field' name='field' rules={[{ required: true }]}>
           <Input.TextArea />
         </Form.Item>
-        <Form.Item label='Type' name='type'>
+        <Form.Item label='Type' name='type' rules={[{ required: true }]}>
           <Select>
             {SELECT_TYPE_OPTIONS.map(option => (
               <Select.Option key={option.value} value={option.value}>
@@ -105,7 +125,7 @@ function UpdateModal ({ visible, info, elements, setElements, onClose }) {
         <Button danger type='primary' icon={<DeleteOutlined />} onClick={onDelete}>
           Delete
       </Button>
-      <Button style={{ marginLeft: 10 }} type='dashed' icon={<CopyOutlined />}>
+      <Button style={{ marginLeft: 10 }} type='dashed' icon={<CopyOutlined />} onClick={onDuplicate}>
           Duplicate
       </Button>
       </div>
@@ -135,7 +155,8 @@ UpdateModal.propTypes = {
     })
   ).isRequired,
   setElements: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  setSelectedItem: PropTypes.func.isRequired
 }
 
 export default UpdateModal
